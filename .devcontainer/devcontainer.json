@@ -1,6 +1,6 @@
 {
 	"name": "loderunner",
-	"dockerFile": "Dockerfile",
+	"dockerFile": "docker-compose.yaml",
 
 	// do not change these if you want Docker in Docker support
 	"runArgs": [ "--init", "--privileged" ],
@@ -46,7 +46,8 @@
 		"ms-azuretools.vscode-docker",
 		"mutantdino.resourcemonitor",
 		"humao.rest-client",
-		"jebbs.plantuml"
+		"jebbs.plantuml",
+		"ms-azuretools.vscode-cosmosdb"
 	],
 	// Run Bash script in .devcontainer directory
 	// Use 'onCreateCommand' to run commands on container creation.
