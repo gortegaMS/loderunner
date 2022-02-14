@@ -128,7 +128,7 @@ namespace LodeRunner.API.Test.IntegrationTests.ExecutingTestRun
             List<string> subDirList;
 
             string dirName = System.Environment.CurrentDirectory;
-            this.output.WriteLine($"CurrentDirectory: {dirName}");
+            this.output.WriteLine($"Current Directory: {dirName}");
 
             // Identifies how many folder above is "sourceDirectoryName" are and replace them with relative path "../"
             if (System.OperatingSystem.IsLinux())
