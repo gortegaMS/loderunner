@@ -4,10 +4,12 @@
 using System;
 using System.CommandLine;
 using System.CommandLine.Invocation;
+using System.IO;
 using System.Net.Http;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using LodeRunner.API.Test.IntegrationTests.Extensions;
 using LodeRunner.Core;
 using LodeRunner.Core.CommandLine;
 using LodeRunner.Core.Extensions;
@@ -56,6 +58,9 @@ namespace LodeRunner.API.Test.IntegrationTests
             var args = new string[] { "--mode", "Client", "--secrets-volume", "secrets", "--region", uniqueRegion };
 
             LodeRunner.Config lrConfig = new ();
+
+            //lrConfig.SecretsVolume = lrConfig.SecretsVolume.GetTempSecretVolume();
+
             RootCommand rootClient = LRCommandLine.BuildRootClientMode();
 
             LodeRunnerService l8rService = null;
