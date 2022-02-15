@@ -17,7 +17,7 @@ namespace LodeRunner.API.Test.IntegrationTests.Extensions
             if (System.OperatingSystem.IsLinux())
             {
                 //return $"../../../../../temp/{volume}";
-                return $"~/secrets/";
+                return $"home/secrets";
             }
             else
             {
@@ -32,7 +32,7 @@ namespace LodeRunner.API.Test.IntegrationTests.Extensions
             if (System.OperatingSystem.IsLinux())
             {
                 //return $"../../../temp/{volume}";
-                return $"~/secrets/";
+                return $"home/secrets";
             }
             else
             {
