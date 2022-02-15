@@ -74,14 +74,6 @@ jobs:
     - name: LodeRunner.API Integration Testing
       if: ${{ inputs.run_and_test }}
       run: |
-        mkdir -p ~/secrets
-        echo -n ${{ secrets.cosmos_rw_key }} > ~/secrets/CosmosKey
-        echo -n ${{ secrets.cosmos_url }} > ~/secrets/CosmosUrl
-        echo -n 'LodeRunner' > ~/secrets/CosmosCollection
-        echo -n 'LodeRunnerTestDB' > ~/secrets/CosmosDatabase
-
-        ls ~/secrets
-        
         cd src/LodeRunner.API.Test
         dotnet test --filter "Category=Integration"
 
