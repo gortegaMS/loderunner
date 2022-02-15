@@ -71,7 +71,7 @@ namespace LodeRunner.API.Test.IntegrationTests.ExecutingTestRun
 
             this.output.WriteLine($"CurrentDirectory: {dirName}");
 
-            string secretsVolume = "secrets".GetTempSecretVolume();
+            //string secretsVolume = "secrets".GetTempSecretVolume();
 
             using var lodeRunnerAppContext = new ProcessContext(
                 new ProcessContextParams()
