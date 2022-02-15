@@ -67,6 +67,10 @@ namespace LodeRunner.API.Test.IntegrationTests.ExecutingTestRun
 
             // Execute dotnet run against LodeRunner project in Client Mode
 
+            string dirName = System.Environment.CurrentDirectory;
+
+            this.output.WriteLine($"CurrentDirectory: {dirName}");
+
             string secretsVolume = "secrets".GetTempSecretVolume();
 
             using var lodeRunnerAppContext = new ProcessContext(
