@@ -22,5 +22,18 @@ namespace LodeRunner.API.Test.IntegrationTests.Extensions
                 return volume;
             }
         }
+
+        public static string GetTempSecretVolumeForWebHost(this string volume)
+        {
+            string dirName = System.Environment.CurrentDirectory;
+            if (System.OperatingSystem.IsLinux())
+            {
+                return $"/temp/{volume}";
+            }
+            else
+            {
+                return volume;
+            }
+        }
     }
 }
