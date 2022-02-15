@@ -65,6 +65,10 @@ namespace LodeRunner.API.Test.IntegrationTests.Controllers
         [InlineData("/version", "text/plain")]
         public async Task CanGetEndpointsReturnSuccessAndCorrectContentType(string url, string expectedValue)
         {
+            string dirName = System.Environment.CurrentDirectory;
+
+            this.output.WriteLine($"CurrentDirectory: {dirName}");
+
             // TODO: This does not test clients endpoint. Please move to different file.
             using var httpClient = ComponentsFactory.CreateLodeRunnerAPIHttpClient(this.factory);
 
