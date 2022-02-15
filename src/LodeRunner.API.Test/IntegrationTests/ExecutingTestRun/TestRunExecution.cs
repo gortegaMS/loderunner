@@ -66,18 +66,16 @@ namespace LodeRunner.API.Test.IntegrationTests.ExecutingTestRun
             using var httpClient = ComponentsFactory.CreateLodeRunnerAPIHttpClient(this.factory);
 
             // Execute dotnet run against LodeRunner project in Client Mode
-
             string dirName = System.Environment.CurrentDirectory;
 
             this.output.WriteLine($"CurrentDirectory: {dirName}");
 
-            //string secretsVolume = "secrets".GetTempSecretVolume();
-
+            // string secretsVolume = "secrets".GetTempSecretVolume();
             using var lodeRunnerAppContext = new ProcessContext(
                 new ProcessContextParams()
             {
                 ProjectBasePath = "LodeRunner/LodeRunner.csproj",
-                ProjectArgs = $"--mode Client --secrets-volume {secretsVolume}",
+                ProjectArgs = $"--mode Client --secrets-volume secrets",
                 ProjectBaseParentDirectoryName = "src",
             }, this.output);
 
@@ -111,7 +109,7 @@ namespace LodeRunner.API.Test.IntegrationTests.ExecutingTestRun
                     string clientStatusId = await this.TryParseProcessOutputAndGetClientStatusId(lodeRunnerAppContext.Output);
 
                     Assert.True(lodeRunnerAPIContext.Errors.Count == 0, $"Errors found in LodeRunner API Output.{Environment.NewLine}{string.Join(",", lodeRunnerAPIContext.Errors)}");
-                    
+
                     Assert.False(string.IsNullOrEmpty(clientStatusId), "Unable to get ClientStatusId");
 
                     // Verify that clientStatusId exist is Database.

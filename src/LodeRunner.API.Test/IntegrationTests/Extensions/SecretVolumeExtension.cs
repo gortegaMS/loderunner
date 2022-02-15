@@ -10,7 +10,6 @@ namespace LodeRunner.API.Test.IntegrationTests.Extensions
 {
     internal static class SecretVolumeExtension
     {
-
         public static string GetTempSecretVolume(this string volume)
         {
             string dirName = System.Environment.CurrentDirectory;
