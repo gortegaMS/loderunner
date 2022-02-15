@@ -13,6 +13,7 @@ namespace LodeRunner.API.Test.IntegrationTests.Extensions
         public static string GetTempSecretVolume(this string volume)
         {
             string dirName = System.Environment.CurrentDirectory;
+            Console.WriteLine($"From Secrets Extension, This is the Current Directory: {dirName}");
             if (System.OperatingSystem.IsLinux())
             {
                 return $"../../../../../temp/{volume}";
@@ -26,7 +27,7 @@ namespace LodeRunner.API.Test.IntegrationTests.Extensions
         public static string GetTempSecretVolumeForWebHost(this string volume)
         {
             string dirName = System.Environment.CurrentDirectory;
-            Console.WriteLine($"From Secrets Extension, This is the Current Directory: {dirName}");
+            Console.WriteLine($"From ForWebHost Secrets Extension, This is the Current Directory: {dirName}");
             if (System.OperatingSystem.IsLinux())
             {
                 return $"../../../temp/{volume}";
