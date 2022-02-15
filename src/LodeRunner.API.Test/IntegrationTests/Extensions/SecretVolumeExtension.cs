@@ -15,7 +15,7 @@ namespace LodeRunner.API.Test.IntegrationTests.Extensions
             string dirName = System.Environment.CurrentDirectory;
             if (System.OperatingSystem.IsLinux())
             {
-                return $"../../../../temp/{volume}";
+                return $"../../../../../temp/{volume}";
             }
             else
             {

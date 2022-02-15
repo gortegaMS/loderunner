@@ -59,7 +59,8 @@ namespace LodeRunner.API.Test.IntegrationTests
 
             LodeRunner.Config lrConfig = new ();
 
-            // lrConfig.SecretsVolume = lrConfig.SecretsVolume.GetTempSecretVolume();
+            lrConfig.SecretsVolume = lrConfig.SecretsVolume.GetTempSecretVolume();
+
             RootCommand rootClient = LRCommandLine.BuildRootClientMode();
 
             LodeRunnerService l8rService = null;
