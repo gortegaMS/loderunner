@@ -55,14 +55,11 @@ namespace LodeRunner.API.Test.IntegrationTests
         {
             string uniqueRegion = $"IntegrationTesting-{callerName}-{DateTime.UtcNow:yyyy'-'MM'-'dd'T'HH':'mm':'ss.fffffffK}";
 
-            string secrets = "secrets".GetTempSecretVolume();
-
+            string secrets = "secrets".GetSecretVolume();
 
             var args = new string[] { "--mode", "Client", "--secrets-volume", $"{secrets}", "--region", uniqueRegion };
 
             LodeRunner.Config lrConfig = new ();
-
-            // lrConfig.SecretsVolume = lrConfig.SecretsVolume.GetTempSecretVolume();
 
             RootCommand rootClient = LRCommandLine.BuildRootClientMode();
 

@@ -106,13 +106,6 @@ namespace LodeRunner.API.Test.IntegrationTests.Controllers
             using var httpClient = ComponentsFactory.CreateLodeRunnerAPIHttpClient(this.factory);
             using var l8rService = await ComponentsFactory.CreateAndStartLodeRunnerServiceInstance(nameof(this.CanGetClients));
 
-
-            if (l8rService == null)
-            {
-                Console.WriteLine("l8rService is null.");
-            }
-
-
             string clientStatusId = l8rService.ClientStatusId;
 
             this.output.WriteLine($"Started LodeRunner (client mode) [ClientStatusId: {clientStatusId}]");
@@ -163,11 +156,6 @@ namespace LodeRunner.API.Test.IntegrationTests.Controllers
             using var httpClient = ComponentsFactory.CreateLodeRunnerAPIHttpClient(this.factory);
 
             using var l8rService = await ComponentsFactory.CreateAndStartLodeRunnerServiceInstance(nameof(this.CanGetClientsById));
-
-            if (l8rService == null)
-            {
-                Console.WriteLine("l8rService is null.");
-            }
 
             string clientStatusId = l8rService.ClientStatusId;
             this.output.WriteLine($"Started LodeRunner (client mode) [ClientStatusId: {clientStatusId}]");

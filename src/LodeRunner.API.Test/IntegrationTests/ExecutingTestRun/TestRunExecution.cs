@@ -55,12 +55,14 @@ namespace LodeRunner.API.Test.IntegrationTests.ExecutingTestRun
             this.jsonOptions.Converters.Add(new JsonStringEnumConverter());
         }
 
-
+        /// <summary>
+        /// Determines whether this instance [can create and execute test run].
+        /// </summary>
+        /// <returns><see cref="Task"/> representing the asynchronous unit test.</returns>
         [Trait("Category", "Integration")]
         [Fact]
         public async Task CanCreateAndExecuteTestRun()
         {
-
             using var httpClient = ComponentsFactory.CreateLodeRunnerAPIHttpClient(this.factory);
 
             // Execute dotnet run against LodeRunner project in Client Mode
@@ -68,7 +70,7 @@ namespace LodeRunner.API.Test.IntegrationTests.ExecutingTestRun
 
             this.output.WriteLine($"CurrentDirectory: {dirName}");
 
-            string secretsVolume = "secrets".GetTempSecretVolume();
+            string secretsVolume = "secrets".GetSecretVolume();
             using var lodeRunnerAppContext = new ProcessContext(
                 new ProcessContextParams()
                 {
@@ -114,7 +116,7 @@ namespace LodeRunner.API.Test.IntegrationTests.ExecutingTestRun
                     await this.VerifyLodeRunnerClientStatusIsReady(httpClient, clientStatusId);
 
                     // Create Test Run
-                    TestRunPayload testRunPayload = new();
+                    TestRunPayload testRunPayload = new ();
 
                     string testRunName = $"Sample TestRun - IntegrationTesting-{nameof(this.CanCreateAndExecuteTestRun)}-{DateTime.UtcNow:yyyy'-'MM'-'dd'T'HH':'mm':'ss.fffffffK}";
 

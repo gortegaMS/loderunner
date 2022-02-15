@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -8,30 +11,20 @@ using System.Threading.Tasks;
 
 namespace LodeRunner.API.Test.IntegrationTests.Extensions
 {
+    /// <summary>
+    /// Secret Volume Extension methods.
+    /// </summary>
     internal static class SecretVolumeExtension
     {
-        public static string GetTempSecretVolume(this string volume)
+        /// <summary>
+        /// Gets the secret volume.
+        /// </summary>
+        /// <param name="volume">The volume.</param>
+        /// <returns>correct secrete folder depending on the OS. Linux or any other.</returns>
+        public static string GetSecretVolume(this string volume)
         {
-            string dirName = System.Environment.CurrentDirectory;
-            Console.WriteLine($"From Secrets Extension, This is the Current Directory: {dirName}");
             if (System.OperatingSystem.IsLinux())
             {
-                //return $"../../../../../temp/{volume}";
-                return $"/tmp/secrets";
-            }
-            else
-            {
-                return volume;
-            }
-        }
-
-        public static string GetTempSecretVolumeForWebHost(this string volume)
-        {
-            string dirName = System.Environment.CurrentDirectory;
-            Console.WriteLine($"From ForWebHost Secrets Extension, This is the Current Directory: {dirName}");
-            if (System.OperatingSystem.IsLinux())
-            {
-                //return $"../../../temp/{volume}";
                 return $"/tmp/secrets";
             }
             else

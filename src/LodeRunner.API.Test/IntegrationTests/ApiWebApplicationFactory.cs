@@ -55,7 +55,7 @@ namespace LodeRunner.API.Test.IntegrationTests
         {
             Config config = new ();
 
-            config.SecretsVolume = config.SecretsVolume.GetTempSecretVolumeForWebHost();
+            config.SecretsVolume = config.SecretsVolume.GetSecretVolume();
             Secrets.LoadSecrets(config);
 
             CancellationTokenSource cancelTokenSource = new ();
