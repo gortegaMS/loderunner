@@ -74,8 +74,6 @@ jobs:
     - name: LodeRunner.API Integration Testing
       needs:  Docker Run and Test LodeRunner API
       if: ${{ inputs.run_and_test }}
-      env:
-        CLIENT_STATUSID: 0
       run: |
         cd src/LodeRunner.API.Test
         dotnet test --filter "Category=Integration"
