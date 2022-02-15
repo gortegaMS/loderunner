@@ -85,6 +85,8 @@ namespace LodeRunner.Core
             // throw exception if volume doesn't exist
             if (!Directory.Exists(volume))
             {
+                string dirName = System.Environment.CurrentDirectory;
+                Console.WriteLine($"GetSecretsFromVolume, This is the Current Directory: {dirName}");
                 throw new Exception($"Volume '{volume}' does not exist");
             }
 
