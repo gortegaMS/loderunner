@@ -79,6 +79,8 @@ jobs:
         echo -n ${{ secrets.cosmos_url }} > ~/secrets/CosmosUrl
         echo -n 'LodeRunner' > ~/secrets/CosmosCollection
         echo -n 'LodeRunnerTestDB' > ~/secrets/CosmosDatabase
+
+        ls ~/secrets
         
         cd src/LodeRunner.API.Test
         dotnet test --filter "Category=Integration"
