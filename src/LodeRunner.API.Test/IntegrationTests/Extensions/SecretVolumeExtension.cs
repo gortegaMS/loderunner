@@ -18,6 +18,9 @@ namespace LodeRunner.API.Test.IntegrationTests.Extensions
     {
         /// <summary>
         /// Gets the secret volume.
+        ///  Note that this logic is utilizing the existing directory convention from "Set Secrets" step in CI/CD.
+        ///    - name: Set Secrets.
+        ///         mkdir -p /tmp/secrets.
         /// </summary>
         /// <param name="volume">The volume.</param>
         /// <returns>correct secrete folder depending on the OS. Linux or any other.</returns>
