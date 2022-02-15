@@ -77,14 +77,12 @@ jobs:
       env:
         CLIENT_STATUSID: 0
       run: |
-
-        cd src/LodeRunner.API.Test
-        mkdir -p ~/temp/secrets
-        echo -n ${{ secrets.cosmos_rw_key }} > ~/temp/secrets/CosmosKey
-        echo -n ${{ secrets.cosmos_url }} > ~/temp/secrets/CosmosUrl
-        echo -n 'LodeRunner' > ~/temp/secrets/CosmosCollection
-        echo -n 'LodeRunnerTestDB' > ~/temp/secrets/CosmosDatabase
-        dotnet test --filter "Category=Integration" -o ~/temp
+        mkdir -p ~/secrets
+        echo -n ${{ secrets.cosmos_rw_key }} > ~/secrets/CosmosKey
+        echo -n ${{ secrets.cosmos_url }} > ~/secrets/CosmosUrl
+        echo -n 'LodeRunner' > ~/secrets/CosmosCollection
+        echo -n 'LodeRunnerTestDB' > ~/secrets/CosmosDatabase
+        dotnet test --filter "Category=Integration"
 
     - name: Delete Secrets
       if: ${{ inputs.run_and_test }}    
