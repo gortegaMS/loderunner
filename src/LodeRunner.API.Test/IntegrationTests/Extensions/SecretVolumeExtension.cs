@@ -16,7 +16,8 @@ namespace LodeRunner.API.Test.IntegrationTests.Extensions
             Console.WriteLine($"From Secrets Extension, This is the Current Directory: {dirName}");
             if (System.OperatingSystem.IsLinux())
             {
-                return $"../../../../../temp/{volume}";
+                //return $"../../../../../temp/{volume}";
+                return $"~/temp/secrets";
             }
             else
             {
@@ -30,7 +31,8 @@ namespace LodeRunner.API.Test.IntegrationTests.Extensions
             Console.WriteLine($"From ForWebHost Secrets Extension, This is the Current Directory: {dirName}");
             if (System.OperatingSystem.IsLinux())
             {
-                return $"../../../temp/{volume}";
+                //return $"../../../temp/{volume}";
+                return $"~/temp/secrets";
             }
             else
             {
