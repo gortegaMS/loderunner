@@ -118,14 +118,17 @@ jobs:
 
     - name: AutoGitOps Pull
       if: ${{ inputs.autogitops }}
-      run: |        
-        docker pull ghcr.io/bartr/autogitops
+      run:         
+        echo AutoGitOps Pull because autogitops is- ${{ inputs.autogitops }}
+        # docker pull ghcr.io/bartr/autogitops
 
     - name: GitOps Deploy
       if: ${{ inputs.autogitops }}    
-      run: |        
-        docker run \
-        --name ago \
-        --rm \
-        -v $(pwd)/autogitops:/ago/autogitops \
-        ghcr.io/bartr/autogitops -r /retaildevcrews/ngsa-asb -p ${{ secrets.GHCR_PAT }}
+      run:    
+        echo GitOps Deploy because autogitops is- ${{ inputs.autogitops }}     
+       
+        # docker run \
+        # --name ago \
+        # --rm \
+        # -v $(pwd)/autogitops:/ago/autogitops \
+        # ghcr.io/bartr/autogitops -r /retaildevcrews/ngsa-asb -p ${{ secrets.GHCR_PAT }}

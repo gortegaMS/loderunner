@@ -52,7 +52,7 @@ namespace LodeRunner.Services
         /// <param name="logger">The logger.</param>
         public LodeRunnerService(Config config, CancellationTokenSource cancellationTokenSource, ILogger<LodeRunnerService> logger)
         {
-            Debug.WriteLine("* LodeRunnerService Constructor *");
+            Console.WriteLine("* LodeRunnerService Constructor *");
 
             this.logger = logger;
 
