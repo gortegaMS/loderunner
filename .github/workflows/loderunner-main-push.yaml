@@ -122,6 +122,7 @@ jobs:
       ghcr_pat: ${{ secrets.GHCR_PAT }}
 
   autogitops:
+    runs-on: ubuntu-20.04
     needs: [ loderunner-only, loderunner-api, loderunner-ui]
     # if: ${{ needs.evaluate-changes.outputs.autogitops == 'true' || needs.evaluate-changes.outputs.LodeRunnerChanged == 'true' }}
     steps:
