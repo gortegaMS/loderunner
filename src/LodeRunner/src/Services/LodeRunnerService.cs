@@ -13,7 +13,7 @@ using LodeRunner.Core.Events;
 using LodeRunner.Core.Extensions;
 using LodeRunner.Core.Interfaces;
 using LodeRunner.Core.Models;
-using LodeRunner.Core.NgsaLogger;
+
 using LodeRunner.Data;
 using LodeRunner.Data.Interfaces;
 using LodeRunner.Interfaces;
@@ -39,10 +39,10 @@ namespace LodeRunner.Services
         private readonly CancellationTokenSource cancellationTokenSource;
         private readonly ClientStatus clientStatus;
         private readonly ILogger logger;
+        private readonly List<string> pendingTestRuns;
         private System.Timers.Timer statusUpdateTimer = default;
         private object lastStatusSender = default;
         private ClientStatusEventArgs lastStatusArgs = default;
-        private List<string> pendingTestRuns;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LodeRunnerService"/> class.
@@ -50,7 +50,8 @@ namespace LodeRunner.Services
         /// <param name="config">The config.</param>
         /// <param name="cancellationTokenSource">The cancellationTokenSource.</param>
         /// <param name="logger">The logger.</param>
-        public LodeRunnerService(Config config, CancellationTokenSource cancellationTokenSource, ILogger<LodeRunnerService> logger)
+        /// <param name="useIdValuesFromConfig">Determines if ClientStatusId , LoadClientId and TestRun will be used instead of local assigned.</param>
+        public LodeRunnerService(Config config, CancellationTokenSource cancellationTokenSource, ILogger<LodeRunnerService> logger, bool useIdValuesFromConfig = false)
         {
             Debug.WriteLine("* LodeRunnerService Constructor *");
 
@@ -65,6 +66,20 @@ namespace LodeRunner.Services
                 Status = ClientStatusType.Starting,
                 LoadClient = this.loadClient,
             };
+
+            // Note: A new LodeRunnerService (CommandMode) is created when we Execute a New TestRun and all, config.TestRunId , config.LoadClientId and
+            // config.ClientStatusId are set before calling this constructor, so we check useIdValuesFromConfig to utilize same Id from Parent LR Client (Caller).
+
+            if (useIdValuesFromConfig)
+            {
+                this.clientStatus.Id = config.ClientStatusId;
+                this.loadClient.Id = config.LoadClientId;
+            }
+            else
+            {
+                config.LoadClientId = this.loadClient.Id;
+                config.ClientStatusId = this.clientStatus.Id;
+            }
 
             this.cancellationTokenSource = cancellationTokenSource;
 
@@ -124,6 +139,8 @@ namespace LodeRunner.Services
                 return await this.StartDryRun();
             }
 
+            DateTime startTime = DateTime.UtcNow;
+
             try
             {
                 if (this.config.IsClientMode)
@@ -140,7 +157,9 @@ namespace LodeRunner.Services
                 // log exception
                 if (!tce.Task.IsCompleted)
                 {
-                    this.logger.LogError(new EventId((int)EventTypes.CommonEvents.Exception, nameof(StartService)), tce, "Exception");
+                    logger.LogError(new EventId((int)LogLevel.Error, nameof(StartService)), tce, SystemConstants.TaskCanceledException);
+
+                    ProcessingEventBus.OnTestRunComplete(null, new LoadResultEventArgs(startTime, DateTime.UtcNow, config.TestRunId, 0, 0, tce.Message));
 
                     return Core.SystemConstants.ExitFail;
                 }
@@ -150,7 +169,10 @@ namespace LodeRunner.Services
             }
             catch (Exception ex)
             {
-                this.logger.LogError(new EventId((int)EventTypes.CommonEvents.Exception, nameof(StartService)), ex, "Exception");
+                logger.LogError(new EventId((int)LogLevel.Error, nameof(StartService)), ex, SystemConstants.Exception);
+
+                ProcessingEventBus.OnTestRunComplete(null, new LoadResultEventArgs(startTime, DateTime.UtcNow, config.TestRunId, 0, 0, ex.Message));
+
                 return Core.SystemConstants.ExitFail;
             }
         }
@@ -198,8 +220,7 @@ namespace LodeRunner.Services
         public void LogStatusChange(object sender, ClientStatusEventArgs args)
         {
             // TODO Move to proper location when merging with DAL
-
-            Console.WriteLine($"{args.Message} - {args.LastUpdated:yyyy'-'MM'-'dd'T'HH':'mm':'ss.fffffffK}"); // TODO fix LogStatusChange implementation
+            logger.LogInformation(new EventId((int)LogLevel.Information, nameof(LogStatusChange)), $"{args.Message}");
         }
 
         /// <summary>
@@ -235,6 +256,37 @@ namespace LodeRunner.Services
 
             // remove TestRun from pending list since upload is complete
             this.pendingTestRuns.Remove(testRun.Id);
+        }
+
+        /// <summary>
+        /// Builds the web host for RunLoop.
+        /// </summary>
+        /// <param name="config">The configuration.</param>
+        /// <param name="cancellationTokenSource">The cancellation token source.</param>
+        /// <returns>The Host.</returns>
+        private static IHost BuildWebHost(Config config, CancellationTokenSource cancellationTokenSource)
+        {
+            int portNumber = AppConfigurationHelper.GetLoadRunnerPort(config.WebHostPort);
+
+            // configure the web host builder
+            return Host.CreateDefaultBuilder()
+                        .ConfigureWebHostDefaults(webBuilder =>
+                        {
+                            webBuilder.ConfigureServices(services =>
+                            {
+                                services.AddSingleton<CancellationTokenSource>(cancellationTokenSource);
+                                services.AddSingleton<Config>(config);
+                                services.AddSingleton<ICosmosConfig>(provider => provider.GetRequiredService<Config>());
+                            });
+                            webBuilder.UseStartup<Startup>();
+                            webBuilder.UseUrls($"http://*:{portNumber}/");
+                        })
+                        .ConfigureLogging(logger =>
+                        {
+                            logger.Setup(logLevelConfig: config, logValues: config, projectName: App.ProjectName);
+                        })
+                        .UseConsoleLifetime()
+                        .Build();
         }
 
         /// <summary>
@@ -315,21 +367,22 @@ namespace LodeRunner.Services
 
             // Data connection not available yet, so we'll just update the stdout log
             ProcessingEventBus.StatusUpdate += this.LogStatusChange;
-            this.StatusUpdate(this, new ClientStatusEventArgs(ClientStatusType.Starting, $"Initializing Client ({this.ClientStatusId})", this.cancellationTokenSource));
+            this.StatusUpdate(this, new ClientStatusEventArgs(ClientStatusType.Starting, $"{Core.SystemConstants.InitializingClient}", this.cancellationTokenSource));
 
             // InitAndRegister() should have data connection available so we'll attach an event subscription to update the database with client status
-            using var clientStatusUpdater = new ClientStatusUpdater(this.GetClientStatusService(), this.clientStatus);
+            using var clientStatusUpdater = new ClientStatusUpdater(this.GetClientStatusService(), this.clientStatus, this.logger, this.config);
 
             ProcessingEventBus.StatusUpdate += clientStatusUpdater.UpdateCosmosStatus;
 
-            this.StatusUpdate(this, new ClientStatusEventArgs(ClientStatusType.Ready, $"Client Ready ({this.ClientStatusId})", this.cancellationTokenSource));
+            this.StatusUpdate(this, new ClientStatusEventArgs(ClientStatusType.Ready, $"{Core.SystemConstants.ClientReady}", this.cancellationTokenSource));
 
             ProcessingEventBus.TestRunComplete += this.UpdateTestRun;
             try
             {
                 while (!this.cancellationTokenSource.Token.IsCancellationRequested)
                 {
-                    Console.WriteLine("Polling for available TestRuns");
+                    logger.LogInformation(new EventId((int)LogLevel.Information, nameof(StartAndWait)), SystemConstants.PollingTestRuns);
+
                     var testRuns = await this.PollForTestRunsAsync();
                     if (testRuns != null && testRuns.Count > 0)
                     {
@@ -341,13 +394,19 @@ namespace LodeRunner.Services
                                 // only execute TestRuns scheduled to run before the next minute
                                 if (testRun.StartTime < DateTime.UtcNow.AddMinutes(1))
                                 {
-                                    this.StatusUpdate(null, new ClientStatusEventArgs(ClientStatusType.Testing, $"Received new TestRun ({testRun.Id})", this.cancellationTokenSource));
+                                    // We set TestRunId so the client can log it when updating Status for ReceivedNewTestRun and ExecutingTestRun.
+                                    // The context for "this.config" is LodeRunner Client.
+                                    this.config.TestRunId = testRun.Id;
+
+                                    this.StatusUpdate(null, new ClientStatusEventArgs(ClientStatusType.Testing, $"{Core.SystemConstants.ReceivedNewTestRun}", this.cancellationTokenSource));
                                     await this.ExecuteNewTestRunAsync(testRun);
+
+                                    this.config.TestRunId = string.Empty;
                                 }
                             }
                         }
 
-                        this.StatusUpdate(null, new ClientStatusEventArgs(ClientStatusType.Ready, $"Client Ready ({this.ClientStatusId})", this.cancellationTokenSource));
+                        this.StatusUpdate(this, new ClientStatusEventArgs(ClientStatusType.Ready, $"{Core.SystemConstants.ClientReady}", this.cancellationTokenSource));
                     }
 
                     await Task.Delay(this.config.PollingInterval * 1000, this.cancellationTokenSource.Token);
@@ -355,11 +414,15 @@ namespace LodeRunner.Services
             }
             catch (TaskCanceledException tce)
             {
-                this.StatusUpdate(this, new ClientStatusEventArgs(ClientStatusType.Terminating, $"Terminating Client ({this.ClientStatusId}) - {tce.Message}", this.cancellationTokenSource));
+                this.StatusUpdate(this, new ClientStatusEventArgs(ClientStatusType.Terminating, $"{Core.SystemConstants.TerminatingClient} - {tce.Message}", this.cancellationTokenSource));
             }
             catch (OperationCanceledException oce)
             {
-                this.StatusUpdate(this, new ClientStatusEventArgs(ClientStatusType.Terminating, $"Terminating Client ({this.ClientStatusId}) - {oce.Message}", this.cancellationTokenSource));
+                this.StatusUpdate(this, new ClientStatusEventArgs(ClientStatusType.Terminating, $"{Core.SystemConstants.TerminatingClient} - {oce.Message}", this.cancellationTokenSource));
+            }
+            finally
+            {
+                this.config.TestRunId = string.Empty;
             }
 
             return Core.SystemConstants.ExitSuccess;
@@ -494,7 +557,7 @@ namespace LodeRunner.Services
             List<TestRun> testRuns = new ();
             try
             {
-                var polledRuns = await GetTestRunService().GetNewTestRunsByClientId(this.ClientStatusId);
+                var polledRuns = await GetTestRunService().GetNewTestRunsByLoadClientId(this.loadClient.Id);
                 foreach (var item in polledRuns)
                 {
                     testRuns.Add((TestRun)item);
@@ -502,13 +565,11 @@ namespace LodeRunner.Services
             }
             catch (CosmosException ce)
             {
-                // TODO: Update logging to handle appropriately
-                Console.WriteLine($"CosmosException: {ce}");
+                logger.LogError(new EventId((int)LogLevel.Error, nameof(PollForTestRunsAsync)), ce, SystemConstants.CosmosException);
             }
             catch (Exception ex)
             {
-                // TODO: Update logging to handle appropriately
-                Console.WriteLine($"Exception: {ex}");
+                logger.LogError(new EventId((int)LogLevel.Error, nameof(PollForTestRunsAsync)), ex, SystemConstants.Exception);
             }
 
             return testRuns;
@@ -521,54 +582,25 @@ namespace LodeRunner.Services
         private async Task ExecuteNewTestRunAsync(TestRun testRun)
         {
             this.pendingTestRuns.Add(testRun.Id);
-            this.StatusUpdate(null, new ClientStatusEventArgs(ClientStatusType.Testing, $"Executing TestRun ({testRun.Id})", this.cancellationTokenSource));
+            this.StatusUpdate(null, new ClientStatusEventArgs(ClientStatusType.Testing, $"{Core.SystemConstants.ExecutingTestRun}", this.cancellationTokenSource));
 
             // convert TestRun LoadTestConfig object to command line args
             string[] args = LoadTestConfigExtensions.GetArgs(testRun.LoadTestConfig);
+            DateTime startTime = DateTime.UtcNow;
 
             CancellationTokenSource cancel = new ();
             try
             {
                 // TODO: Ensure all paths (i.e. with/without errors) with run loop and run once use UpdateTestRun event so cosmos
                 // can be updated accordingly
-                _ = await ClientModeExtensions.CreateAndStartLodeRunnerCommandMode(args, testRun.Id, cancel, (ILogger<LodeRunnerService>)this.logger);
+                _ = await ClientModeExtensions.CreateAndStartLodeRunnerCommandMode(args, this.ClientStatusId, this.loadClient.Id, testRun.Id, cancel, (ILogger<LodeRunnerService>)this.logger);
             }
             catch (Exception ex)
             {
                 // TODO: Handle specific exceptions (as needed)
                 // TODO: Revisit how to use/where to raise the TestRunComplete event when the test run fails with an exception
-                ProcessingEventBus.OnTestRunComplete(null, new LoadResultEventArgs(DateTime.UtcNow, DateTime.UtcNow, testRun.Id, 0, 0, ex.Message));
+                ProcessingEventBus.OnTestRunComplete(null, new LoadResultEventArgs(startTime, DateTime.UtcNow, testRun.Id, 0, 0, ex.Message));
             }
-        }
-
-        /// <summary>
-        /// Builds the web host for RunLoop.
-        /// </summary>
-        /// <param name="config">The configuration.</param>
-        /// <param name="cancellationTokenSource">The cancellation token source.</param>
-        /// <returns>The Host.</returns>
-        private IHost BuildWebHost(Config config, CancellationTokenSource cancellationTokenSource)
-        {
-            int portNumber = AppConfigurationHelper.GetLoadRunnerPort(config.WebHostPort);
-
-            // configure the web host builder
-            return Host.CreateDefaultBuilder()
-                        .ConfigureWebHostDefaults(webBuilder =>
-                        {
-                            webBuilder.ConfigureServices(services =>
-                            {
-                                services.AddSingleton<CancellationTokenSource>(cancellationTokenSource);
-                                services.AddSingleton<ICosmosConfig>(provider => provider.GetRequiredService<Config>());
-                            });
-                            webBuilder.UseStartup<Startup>();
-                            webBuilder.UseUrls($"http://*:{portNumber}/");
-                        })
-                        .ConfigureLogging(logger =>
-                        {
-                            logger.Setup(config, App.ProjectName);
-                        })
-                        .UseConsoleLifetime()
-                        .Build();
         }
     }
 }

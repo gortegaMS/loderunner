@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using LodeRunner.Core;
 using LodeRunner.Core.Models;
 using LodeRunner.Core.Models.Validators;
-using LodeRunner.Core.Responses;
 using LodeRunner.Data.Interfaces;
 using Microsoft.Azure.Cosmos;
 
@@ -62,16 +61,16 @@ namespace LodeRunner.Services
         }
 
         /// <summary>
-        /// Gets all available TestRuns for the given client id.
+        /// Gets all available TestRuns for the given loadClientId.
         /// </summary>
-        /// <param name="clientId">The client id.</param>
+        /// <param name="loadClientId">The loadclient id.</param>
         /// <returns>
         /// List of TestRuns to run on client.
         /// </returns>
-        public async Task<IEnumerable<TestRun>> GetNewTestRunsByClientId(string clientId)
+        public async Task<IEnumerable<TestRun>> GetNewTestRunsByLoadClientId(string loadClientId)
         {
             string sql = $"SELECT * FROM e WHERE e.entityType='TestRun' ";
-            sql += $"and array_contains(e.loadClients, {{ \"id\": \"{clientId}\"}}, true) ";
+            sql += $"and array_contains(e.loadClients, {{ \"id\": \"{loadClientId}\"}}, true) ";
 
             // TODO: Update and add later once LoadResults schema is defined
             // sql + = $"and NOT array_contains(e.ClientResults, {{\"id\": \"{clientId}\"}}, true)";

@@ -3,7 +3,10 @@
 
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 using LodeRunner.API.Middleware;
+using LodeRunner.API.Test.IntegrationTests.ExecutingTestRun;
+using LodeRunner.API.Test.IntegrationTests.Extensions;
 using LodeRunner.Core;
 using LodeRunner.Core.Interfaces;
 using LodeRunner.Data;
@@ -23,6 +26,17 @@ namespace LodeRunner.API.Test.IntegrationTests
     public class ApiWebApplicationFactory<TStartup> : WebApplicationFactory<TStartup>
         where TStartup : class
     {
+        private readonly ApiPortPoolManager apiPortPoolManager = new ();
+
+        /// <summary>
+        /// Gets the next available port.
+        /// </summary>
+        /// <returns>NextAvailablePort.</returns>
+        public int GetNextAvailablePort()
+        {
+            return this.apiPortPoolManager.GetNextAvailablePort();
+        }
+
         /// <summary>
         /// Creates a <see cref="T:Microsoft.AspNetCore.Hosting.IWebHostBuilder" /> used to set up <see cref="T:Microsoft.AspNetCore.TestHost.TestServer" />.
         /// </summary>
@@ -52,6 +66,8 @@ namespace LodeRunner.API.Test.IntegrationTests
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             Config config = new ();
+
+            config.SecretsVolume = config.SecretsVolume.GetSecretVolume();
             Secrets.LoadSecrets(config);
             CancellationTokenSource cancelTokenSource = new ();
 

@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using LodeRunner.API.Test.IntegrationTests.Extensions;
 using LodeRunner.Core;
 using LodeRunner.Core.CommandLine;
 using LodeRunner.Core.Extensions;
@@ -53,7 +54,9 @@ namespace LodeRunner.API.Test.IntegrationTests
         {
             string uniqueRegion = $"IntegrationTesting-{callerName}-{DateTime.UtcNow:yyyy'-'MM'-'dd'T'HH':'mm':'ss.fffffffK}";
 
-            var args = new string[] { "--mode", "Client", "--secrets-volume", "secrets", "--region", uniqueRegion };
+            string secrets = "secrets".GetSecretVolume();
+
+            var args = new string[] { "--mode", "Client", "--secrets-volume", $"{secrets}", "--region", uniqueRegion };
 
             LodeRunner.Config lrConfig = new ();
             RootCommand rootClient = LRCommandLine.BuildRootClientMode();
@@ -96,7 +99,7 @@ namespace LodeRunner.API.Test.IntegrationTests
             string projectName = Assembly.GetCallingAssembly().GetName().Name;
             using var loggerFactory = LoggerFactory.Create(logger =>
                 {
-                    logger.Setup(config, projectName);
+                    logger.Setup(logLevelConfig: config, logValues: config, projectName: projectName);
                 });
 
             return loggerFactory.CreateLogger<LodeRunnerService>();

@@ -153,11 +153,10 @@ namespace LodeRunner.API
         // Build the web host
         private static IWebHost BuildHost(Config config)
         {
-            int portNumber = AppConfigurationHelper.GetLoadRunnerApiPort(config.WebHostPort);
-
             string projectName = Assembly.GetCallingAssembly().GetName().Name;
 
             // configure the web host builder
+            // configure MinRequestBodyDataRate if required: https://docs.microsoft.com/en-us/aspnet/core/fundamentals/servers/kestrel/options?view=aspnetcore-6.0#minimum-request-body-data-rate
             IWebHostBuilder builder = WebHost.CreateDefaultBuilder()
                 .ConfigureServices(services =>
                 {
@@ -165,12 +164,12 @@ namespace LodeRunner.API
                     services.AddSingleton<Config>(config);
                     services.AddSingleton<ICosmosConfig>(provider => provider.GetRequiredService<Config>());
                 })
-                .UseUrls($"http://*:{portNumber}/")
+                .UseUrls($"http://*:{config.Port}/")
                 .UseStartup<Startup>()
                 .UseShutdownTimeout(TimeSpan.FromSeconds(10))
                 .ConfigureLogging(logger =>
                 {
-                    logger.Setup(config, projectName);
+                    logger.Setup(logLevelConfig: config, logValues: config, projectName: projectName);
                 });
 
             // build the host

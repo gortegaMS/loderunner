@@ -2,9 +2,11 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using LodeRunner.Core.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.CorrelationVector;
 using Microsoft.Extensions.Logging;
@@ -19,16 +21,19 @@ namespace LodeRunner.Core.NgsaLogger
     {
         private readonly string name;
         private readonly NgsaLoggerConfiguration config;
+        private readonly ILogValues logValues;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NgsaLogger"/> class.
         /// </summary>
         /// <param name="name">Logger Name.</param>
         /// <param name="config">Logger Config.</param>
-        public NgsaLogger(string name, NgsaLoggerConfiguration config)
+        /// <param name="logValues">logValues interface than allows to inject a new data dictionary when.</param>
+        public NgsaLogger(string name, NgsaLoggerConfiguration config, ILogValues logValues)
         {
             this.name = name;
             this.config = config;
+            this.logValues = logValues;
         }
 
         /// <summary>
@@ -95,6 +100,15 @@ namespace LodeRunner.Core.NgsaLogger
             if (!string.IsNullOrEmpty(Region))
             {
                 d.Add("Region", Region);
+            }
+
+            // Adds custom item to Dictionary.
+            if (this.logValues?.GetLogValues()?.Count > 0)
+            {
+                foreach (var kv in this.logValues.GetLogValues())
+                {
+                    d.Add(kv.Key, kv.Value);
+                }
             }
 
             // convert state to list

@@ -108,5 +108,85 @@ namespace LodeRunner.Core
         /// The LodeRunner Command mode.
         /// </summary>
         public const string LodeRunnerCommandMode = "Command";
+
+        /// <summary>
+        /// The initializing client.
+        /// </summary>
+        public const string InitializingClient = "Initializing Client";
+
+        /// <summary>
+        /// The client ready.
+        /// </summary>
+        public const string ClientReady = "Client Ready";
+
+        /// <summary>
+        /// The received new test run.
+        /// </summary>
+        public const string ReceivedNewTestRun = "Received new TestRun";
+
+        /// <summary>
+        /// The executing test run.
+        /// </summary>
+        public const string ExecutingTestRun = "Executing TestRun";
+
+        /// <summary>
+        /// The terminating client.
+        /// </summary>
+        public const string TerminatingClient = "Terminating Client";
+
+        /// <summary>
+        /// The default API web host port.
+        /// </summary>
+        public const int DefaultApiWebHostPort = 8080;
+
+        /// <summary>
+        /// The client status id field name.
+        /// </summary>
+        public const string ClientStatusIdFieldName = "ClientStatusId";
+
+        /// <summary>
+        /// The test run id field name.
+        /// </summary>
+        public const string TestRunIdFieldName = "TestRunId";
+
+        /// <summary>
+        /// The load client identifier field name.
+        /// </summary>
+        public const string LoadClientIdFieldName = "LoadClientId";
+
+        /// <summary>
+        /// The task canceled exception string.
+        /// </summary>
+        public const string TaskCanceledException = "Task Canceled Exception";
+
+        /// <summary>
+        /// The operation canceled exception string.
+        /// </summary>
+        public const string OperationCanceledException = "Operation Canceled Exception";
+
+        /// <summary>
+        /// The cosmos exception string.
+        /// </summary>
+        public const string CosmosException = "Cosmos Exception";
+
+        /// <summary>
+        /// The exception string.
+        /// </summary>
+        public const string Exception = "Exception";
+
+        /// <summary>
+        /// The polling test runs string.
+        /// </summary>
+        public const string PollingTestRuns = "Polling for available TestRuns";
+
+        /// <summary>
+        /// The shutting down string.
+        /// </summary>
+        public const string ShuttingDown = "Shutting down";
+
+        /// <summary>
+        /// The load test request log name.
+        /// </summary>
+        public const string LoadTestRequestLogName = "LoadTestRequest";
     }
 }
