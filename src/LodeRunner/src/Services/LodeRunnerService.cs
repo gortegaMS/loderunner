@@ -53,7 +53,7 @@ namespace LodeRunner.Services
         /// <param name="useIdValuesFromConfig">Determines if ClientStatusId , LoadClientId and TestRun will be used instead of local assigned.</param>
         public LodeRunnerService(Config config, CancellationTokenSource cancellationTokenSource, ILogger<LodeRunnerService> logger, bool useIdValuesFromConfig = false)
         {
-            Debug.WriteLine("* LodeRunnerService Constructor *");
+            Console.WriteLine("* LodeRunnerService Constructor *");
 
             this.logger = logger;
 
