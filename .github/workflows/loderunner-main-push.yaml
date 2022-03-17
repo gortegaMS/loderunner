@@ -121,25 +121,18 @@ jobs:
       ghcr_id: ${{ secrets.GHCR_ID }}
       ghcr_pat: ${{ secrets.GHCR_PAT }}
 
-  autogitops:
+ autogitops:
     runs-on: ubuntu-20.04
     needs: [ loderunner-only, loderunner-api, loderunner-ui]
-    # if: ${{ needs.evaluate-changes.outputs.autogitops == 'true' || needs.evaluate-changes.outputs.LodeRunnerChanged == 'true' }}
     steps:
     - name: AutoGitOps Pull
-      # if: ${{ inputs.autogitops }}
       run: |        
-        # docker pull ghcr.io/bartr/autogitops
-        echo MAIN PUSH - AutoGitOps Pull will be executed
+        docker pull ghcr.io/bartr/autogitops
 
     - name: GitOps Deploy
-      # if: ${{ inputs.autogitops }}    
       run: |        
-        # docker run \
-        # --name ago \
-        # --rm \
-        # -v $(pwd)/autogitops:/ago/autogitops \
-        # ghcr.io/bartr/autogitops -r /retaildevcrews/ngsa-asb -p ${{ secrets.GHCR_PAT }}
-
-        echo MAIN PUSH - GitOps Deploy - will be executed
-
+        docker run \
+        --name ago \
+        --rm \
+        -v $(pwd)/autogitops:/ago/autogitops \
+        ghcr.io/bartr/autogitops -r /retaildevcrews/ngsa-asb --no-push
