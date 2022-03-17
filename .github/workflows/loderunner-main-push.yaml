@@ -123,6 +123,9 @@ jobs:
 
   autogitops:
     runs-on: ubuntu-20.04
+    permissions:
+      actions: read
+      contents: read
     needs: [ loderunner-only, loderunner-api, loderunner-ui]
     steps:
     - name: AutoGitOps Pull
